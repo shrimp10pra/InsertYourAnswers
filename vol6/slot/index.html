@@ -384,7 +384,7 @@
   #log{
     list-style:none;
     margin:0; padding:0;
-    max-height:220px;
+    max-height:280px;
     overflow-y:auto;
     border:2px solid rgba(242,237,228,0.15);
     border-radius:8px;
@@ -393,10 +393,10 @@
     display:flex;
     flex-wrap:wrap;
     align-items:baseline;
-    column-gap:6px;
-    padding:12px 14px;
-    font-size:14px;
-    line-height:1.5;
+    column-gap:8px;
+    padding:14px 16px;
+    font-size:16px;
+    line-height:1.6;
     border-left:5px solid transparent;
     border-bottom:1px solid rgba(242,237,228,0.1);
     background:rgba(255,255,255,0.02);
@@ -411,7 +411,7 @@
   #log .log-plain{color:rgba(242,237,228,0.75);}
   #log .log-power, #log .log-dice, #log .log-total{
     font-family:'Reggae One', sans-serif;
-    font-size:16px;
+    font-size:19px;
   }
   #log .log-power{color:var(--gold);}
   #log .log-dice{color:var(--dice);}
@@ -478,7 +478,7 @@
   <div class="settings" id="settingsPanel">
     <div class="settings-row">
       <label for="initScore">初期得点</label>
-      <input type="number" id="initScore" min="1" max="99" value="20">
+      <input type="number" id="initScore" min="1" max="999" value="200">
       <span style="color:rgba(242,237,228,0.5);">（リセット時に反映されます）</span>
     </div>
     <div class="settings-row">
@@ -510,7 +510,7 @@
     <section class="panel teamA" id="panelA">
       <div class="dmg-popup" id="popupA"></div>
       <div class="team-name" id="nameA">チームA</div>
-      <div class="score-num" id="scoreA">20</div>
+      <div class="score-num" id="scoreA">200</div>
       <div class="hp-track"><div class="hp-fill" id="hpA" style="width:100%"></div></div>
       <div class="atk-label">攻撃力を選んで撃つ</div>
       <div class="atk-row" id="btnsA">
@@ -527,7 +527,7 @@
     <section class="panel teamB" id="panelB">
       <div class="dmg-popup" id="popupB"></div>
       <div class="team-name" id="nameB">チームB</div>
-      <div class="score-num" id="scoreB">20</div>
+      <div class="score-num" id="scoreB">200</div>
       <div class="hp-track"><div class="hp-fill" id="hpB" style="width:100%"></div></div>
       <div class="atk-label">攻撃力を選んで撃つ</div>
       <div class="atk-row" id="btnsB">
@@ -559,7 +559,7 @@
   const roster = { A:'チームA', B:'チームB', C:'チームC', D:'チームD' };
   const slotTeam = { A:'A', B:'B' }; // 左パネル(A)・右パネル(B)にどのロースターチームが入っているか
 
-  let defaultScore = 20;
+  let defaultScore = 200;
   let scoreA = defaultScore;
   let scoreB = defaultScore;
   let gameOver = false;
