@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>焼いて！サイコロお題ステーキ！</title>
+<style>
+  :root{
+    --bg: #241019;
+    --bg-alt: #2f1620;
+    --bg-alt-2: #3a1c28;
+    --line: rgba(245,239,230,0.14);
+    --text: #f5efe6;
+    --text-dim: #c9a9a8;
+    --gold: #f5c242;
+    --danger: #ff5a4e;
+    --ok: #6bd08f;
+    --team-1: #ff6b5b;
+    --team-2: #5ba8ff;
+    --team-3: #6bd08f;
+    --team-4: #c792ea;
+    --radius-s: 6px;
+    --radius-m: 10px;
+    font-size: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(245,194,66,0.10), transparent 60%),
+      var(--bg);
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  header.page-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  header.page-head h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+
+  .phase-tag {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  /* ---------- Topics reveal ---------- */
+
+  section.topics-board {
+    margin-bottom: 32px;
+  }
+
+  .reveal-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 46px 20px;
+    background: var(--bg-alt);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-m);
+    text-align: center;
+  }
+
+  .reveal-panel p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+
+  .topics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    animation: reveal 0.5s ease;
+  }
+
+  @keyframes reveal {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .topic-card {
+    background: var(--bg-alt);
+    border-left: 3px solid var(--gold);
+    border-radius: var(--radius-s);
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .topic-num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1.4;
+    min-width: 1.4em;
+  }
+
+  .topic-text {
+    flex: 1;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  /* ---------- Main layout: timer + scoreboard/ranking ---------- */
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .topics-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ---------- Timer ---------- */
+
+  .timer-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    position: sticky;
+    top: 20px;
+  }
+
+  .spotlight {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 40%, rgba(245,194,66,0.20), rgba(245,194,66,0.03) 70%);
+    border: 1px solid var(--line);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .spotlight.danger {
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,90,78,0.0); }
+    50% { box-shadow: 0 0 0 14px rgba(255,90,78,0.08); }
+  }
+
+  .timer-digits {
+    font-size: 3.1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    color: var(--gold);
+  }
+
+  .spotlight.danger .timer-digits { color: var(--danger); }
+  .spotlight.ended .timer-digits { color: var(--text-dim); }
+  .spotlight.waiting .timer-digits { color: var(--text-dim); }
+
+  .timer-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: var(--radius-s);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.08s ease, opacity 0.15s ease;
+  }
+
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: var(--gold);
+    color: #241019;
+  }
+
+  button.primary:disabled {
+    background: var(--bg-alt-2);
+    color: var(--text-dim);
+    cursor: not-allowed;
+  }
+
+  button.ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--line);
+  }
+
+  button.ghost:hover { border-color: var(--text-dim); }
+
+  .timer-status {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-align: center;
+    min-height: 1.2em;
+  }
+
+  .unlock-row {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ---------- Scoreboard ---------- */
+
+  .scoreboard {
+    background: var(--bg-alt);
+    border-radius: var(--radius-m);
+    padding: 18px;
+    border: 1px solid var(--line);
+  }
+
+  .scoreboard h2, .ranking-panel h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin: 0 0 14px;
+  }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: minmax(110px, 160px) repeat(6, 1fr);
+    gap: 8px;
+    align-items: center;
+  }
+
+  .score-head-cell {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+
+  .team-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .team-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .team-name-cell input[type="text"] {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 2px 0;
+    width: 100%;
+  }
+
+  .team-name-cell input[type="text"]:not(:disabled):focus {
+    outline: none;
+    border-bottom: 1px solid var(--text-dim);
+  }
+
+  .check-cell {
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--line);
+    background: rgba(245,239,230,0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .check-cell:hover:not(.locked) {
+    border-color: var(--text-dim);
+  }
+
+  .check-cell.locked {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .check-cell.checked {
+    background: var(--cell-color, var(--gold));
+    border-color: var(--cell-color, var(--gold));
+  }
+
+  .check-cell.just-checked {
+    animation: pop 0.25s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .check-mark {
+    font-size: 1.3rem;
+    line-height: 1;
+    color: #241019;
+    font-weight: 700;
+  }
+
+  .check-time {
+    font-size: 0.62rem;
+    color: rgba(36,16,25,0.75);
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+  }
+
+  /* ---------- Ranking ---------- */
+
+  .ranking-panel {
+    margin-top: 20px;
+    background: var(--bg-alt);
+    border-radius: var(--radius-m);
+    padding: 18px;
+    border: 1px solid var(--line);
+  }
+
+  .rank-row {
+    display: grid;
+    grid-template-columns: 2.4em 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rank-row:last-child { border-bottom: none; }
+
+  .rank-num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
+  .rank-row.top .rank-num { color: var(--gold); }
+
+  .rank-team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+
+  .rank-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .rank-time {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    min-width: 4.5em;
+    text-align: right;
+  }
+
+  footer.hint {
+    margin-top: 28px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  a { color: var(--gold); }
+
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spotlight.danger { animation: none; }
+    .check-cell.just-checked { animation: none; }
+    .topics-grid { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <h1></h1>
+    <span class="phase-tag" id="phaseTag"></span>
+  </header>
+
+  <section class="topics-board" id="topicsBoard"></section>
+
+  <div class="main-grid">
+    <div class="timer-panel">
+      <div class="spotlight waiting" id="spotlight">
+        <div class="timer-digits" id="timerDigits">4:00</div>
+      </div>
+      <div class="timer-controls">
+        <button class="primary" id="startBtn" disabled>スタート</button>
+        <button class="ghost" id="resetBtn">リセット</button>
+      </div>
+      <div class="timer-status" id="timerStatus"></div>
+      <label class="unlock-row">
+        <input type="checkbox" id="unlockAfterEnd">
+        終了後もチェックを修正できるようにする
+      </label>
+    </div>
+
+    <div>
+      <div class="scoreboard">
+        <h2>チェック表（クリックでチェック）</h2>
+        <div class="score-grid" id="scoreGrid"></div>
+      </div>
+
+      <div class="ranking-panel">
+        <h2>順位</h2>
+        <div id="rankingList"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="hint">
+    使い方: 「お題を表示」でお題6つを公開 → 「スタート」で4分計測開始 → 各チームが答えられたお題にその場でチェック（チェックした時刻を自動記録）。
+    同じチェック数のチームは、先にその数に到達した方が上位になります。ラウンドが終わったら「リセット」でお題を隠し、次のラウンドの準備状態に戻せます（チーム名は保持されます）。
+    お題の内容を変えるには、このファイル内の <code>TOPICS</code> 配列を書き換えてください。
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ここでお題を6つセットしてください。イベント前に書き換えます。
+  var TOPICS = [
+    "水泳大会に出て無双してる人魚",
+    "イケメンが日本の国旗を抱きしめながら一言",
+    "逆に起きてなきゃいけない人のための動画「爆起（ばくおき）ASMR ～あなたに喚（わめ）く3時間～」はこんなだ",
+    "明らかに向いてないのに一人称が「オデ」の巨人に電話対応と事務を任せてるオフィス",
+    "クラスに馴染むためトランプマジックだけを必死に覚えてやってきたのに、初日にトランプを没収されてしまった転校生",
+    "ご祝儀と使える一発ギャグをあげないといけない結婚式"
+  ];
+
+  var TOPIC_COUNT = TOPICS.length;
+  var TEAM_COLORS = ["var(--team-1)", "var(--team-2)", "var(--team-3)", "var(--team-4)"];
+  var DURATION_MS = 4 * 60 * 1000;
+
+  var state = {
+    phase: "hidden", // hidden | ready | running | ended
+    teams: [
+      { name: "チームA" },
+      { name: "チームB" },
+      { name: "チームC" },
+      { name: "チームD" }
+    ],
+    // checkTime[teamIdx][topicIdx] = ms elapsed since start, or null
+    checkTime: [
+      new Array(TOPIC_COUNT).fill(null),
+      new Array(TOPIC_COUNT).fill(null),
+      new Array(TOPIC_COUNT).fill(null),
+      new Array(TOPIC_COUNT).fill(null)
+    ],
+    startedAt: null,
+    remainingMs: DURATION_MS,
+    timerHandle: null
+  };
+
+  var topicsBoard = document.getElementById("topicsBoard");
+  var scoreGrid = document.getElementById("scoreGrid");
+  var rankingList = document.getElementById("rankingList");
+  var phaseTag = document.getElementById("phaseTag");
+  var spotlight = document.getElementById("spotlight");
+  var timerDigits = document.getElementById("timerDigits");
+  var timerStatus = document.getElementById("timerStatus");
+  var startBtn = document.getElementById("startBtn");
+  var resetBtn = document.getElementById("resetBtn");
+  var unlockAfterEnd = document.getElementById("unlockAfterEnd");
+
+  function formatTime(ms) {
+    var totalSec = Math.max(0, ms) / 1000;
+    var m = Math.floor(totalSec / 60);
+    var s = Math.floor(totalSec % 60);
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function formatElapsed(ms) {
+    var totalSec = ms / 1000;
+    var m = Math.floor(totalSec / 60);
+    var s = (totalSec % 60).toFixed(1);
+    if (Number(s) < 10) s = "0" + s;
+    return m + ":" + s;
+  }
+
+  function teamNameEditable() {
+    return state.phase === "hidden" || state.phase === "ready";
+  }
+
+  function gridInteractive() {
+    if (state.phase === "running") return true;
+    if (state.phase === "ended" && unlockAfterEnd.checked) return true;
+    return false;
+  }
+
+  function renderTopicsBoard() {
+    topicsBoard.innerHTML = "";
+
+    if (state.phase === "hidden") {
+      var panel = document.createElement("div");
+      panel.className = "reveal-panel";
+
+      var p = document.createElement("p");
+      p.textContent = "";
+
+      var btn = document.createElement("button");
+      btn.className = "primary";
+      btn.textContent = "お題を表示";
+      btn.addEventListener("click", revealTopics);
+
+      panel.appendChild(p);
+      panel.appendChild(btn);
+      topicsBoard.appendChild(panel);
+      return;
+    }
+
+    var grid = document.createElement("div");
+    grid.className = "topics-grid";
+    for (var i = 0; i < TOPIC_COUNT; i++) {
+      var card = document.createElement("div");
+      card.className = "topic-card";
+
+      var num = document.createElement("div");
+      num.className = "topic-num";
+      num.textContent = (i + 1) + ".";
+
+      var text = document.createElement("div");
+      text.className = "topic-text";
+      text.textContent = TOPICS[i];
+
+      card.appendChild(num);
+      card.appendChild(text);
+      grid.appendChild(card);
+    }
+    topicsBoard.appendChild(grid);
+  }
+
+  function renderScoreGrid() {
+    scoreGrid.innerHTML = "";
+
+    var blank = document.createElement("div");
+    scoreGrid.appendChild(blank);
+    for (var h = 0; h < TOPIC_COUNT; h++) {
+      var hc = document.createElement("div");
+      hc.className = "score-head-cell";
+      hc.textContent = (h + 1);
+      scoreGrid.appendChild(hc);
+    }
+
+    state.teams.forEach(function (team, tIdx) {
+      var nameCell = document.createElement("div");
+      nameCell.className = "team-name-cell";
+
+      var dot = document.createElement("span");
+      dot.className = "team-dot";
+      dot.style.background = TEAM_COLORS[tIdx];
+
+      var nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.value = team.name;
+      nameInput.disabled = !teamNameEditable();
+      nameInput.addEventListener("input", function (e) {
+        state.teams[tIdx].name = e.target.value;
+        renderRanking();
+      });
+
+      nameCell.appendChild(dot);
+      nameCell.appendChild(nameInput);
+      scoreGrid.appendChild(nameCell);
+
+      for (var topicIdx = 0; topicIdx < TOPIC_COUNT; topicIdx++) {
+        (function (tI, pI) {
+          var cell = document.createElement("div");
+          var checkedAt = state.checkTime[tI][pI];
+          var interactive = gridInteractive();
+
+          cell.className = "check-cell" + (checkedAt !== null ? " checked" : "") + (!interactive ? " locked" : "");
+          cell.style.setProperty("--cell-color", TEAM_COLORS[tI]);
+          cell.tabIndex = interactive ? 0 : -1;
+
+          if (checkedAt !== null) {
+            var mark = document.createElement("div");
+            mark.className = "check-mark";
+            mark.textContent = "✓";
+            cell.appendChild(mark);
+
+            var timeLabel = document.createElement("div");
+            timeLabel.className = "check-time";
+            timeLabel.textContent = formatElapsed(checkedAt);
+            cell.appendChild(timeLabel);
+          }
+
+          function toggle() {
+            if (!gridInteractive()) return;
+            if (state.checkTime[tI][pI] !== null) {
+              state.checkTime[tI][pI] = null;
+            } else {
+              var elapsed = state.startedAt !== null ? (Date.now() - state.startedAt) : 0;
+              state.checkTime[tI][pI] = elapsed;
+              cell.classList.add("just-checked");
+            }
+            renderScoreGrid();
+            renderRanking();
+          }
+
+          cell.addEventListener("click", toggle);
+          cell.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggle();
+            }
+          });
+
+          scoreGrid.appendChild(cell);
+        })(tIdx, topicIdx);
+      }
+    });
+  }
+
+  function computeStandings() {
+    var rows = state.teams.map(function (team, idx) {
+      var times = state.checkTime[idx].filter(function (t) { return t !== null; }).sort(function (a, b) { return a - b; });
+      var count = times.length;
+      var timeAtCount = count > 0 ? times[count - 1] : Infinity;
+      return { idx: idx, name: team.name, count: count, timeAtCount: timeAtCount, color: TEAM_COLORS[idx] };
+    });
+
+    rows.sort(function (a, b) {
+      if (b.count !== a.count) return b.count - a.count;
+      if (a.timeAtCount !== b.timeAtCount) return a.timeAtCount - b.timeAtCount;
+      return a.idx - b.idx;
+    });
+
+    rows.forEach(function (row, i) {
+      if (i === 0) {
+        row.rank = 1;
+      } else {
+        var prev = rows[i - 1];
+        var tie = (row.count === prev.count) && (row.count === 0);
+        row.rank = tie ? prev.rank : i + 1;
+      }
+    });
+
+    return rows;
+  }
+
+  function renderRanking() {
+    rankingList.innerHTML = "";
+    var standings = computeStandings();
+
+    standings.forEach(function (row) {
+      var rowEl = document.createElement("div");
+      rowEl.className = "rank-row" + (row.rank === 1 && row.count > 0 ? " top" : "");
+
+      var rankEl = document.createElement("div");
+      rankEl.className = "rank-num";
+      rankEl.textContent = row.count > 0 ? (row.rank + "位") : "-";
+
+      var teamEl = document.createElement("div");
+      teamEl.className = "rank-team";
+      var dot = document.createElement("span");
+      dot.className = "team-dot";
+      dot.style.background = row.color;
+      teamEl.appendChild(dot);
+      teamEl.appendChild(document.createTextNode(row.name));
+
+      var countEl = document.createElement("div");
+      countEl.className = "rank-count";
+      countEl.textContent = row.count + " / " + TOPIC_COUNT;
+
+      var timeEl = document.createElement("div");
+      timeEl.className = "rank-time";
+      timeEl.textContent = row.count > 0 ? formatElapsed(row.timeAtCount) + " 到達" : "";
+
+      rowEl.appendChild(rankEl);
+      rowEl.appendChild(teamEl);
+      rowEl.appendChild(countEl);
+      rowEl.appendChild(timeEl);
+      rankingList.appendChild(rowEl);
+    });
+  }
+
+  function renderPhase() {
+    if (state.phase === "hidden") {
+      phaseTag.textContent = "";
+      startBtn.disabled = true;
+      startBtn.textContent = "スタート";
+      spotlight.classList.remove("danger", "ended");
+      spotlight.classList.add("waiting");
+    } else if (state.phase === "ready") {
+      phaseTag.textContent = "";
+      startBtn.disabled = false;
+      startBtn.textContent = "スタート";
+      spotlight.classList.remove("danger", "ended", "waiting");
+    } else if (state.phase === "running") {
+      phaseTag.textContent = "";
+      startBtn.disabled = true;
+      startBtn.textContent = "";
+      spotlight.classList.remove("ended", "waiting");
+    } else if (state.phase === "ended") {
+      phaseTag.textContent = "";
+      startBtn.disabled = true;
+      startBtn.textContent = "";
+      spotlight.classList.remove("danger", "waiting");
+      spotlight.classList.add("ended");
+    }
+  }
+
+  function updateTimerDisplay() {
+    timerDigits.textContent = formatTime(state.remainingMs);
+    if (state.phase === "running" && state.remainingMs <= 15000) {
+      spotlight.classList.add("danger");
+    } else {
+      spotlight.classList.remove("danger");
+    }
+  }
+
+  function tick() {
+    if (state.phase !== "running") return;
+    var elapsed = Date.now() - state.startedAt;
+    state.remainingMs = DURATION_MS - elapsed;
+    if (state.remainingMs <= 0) {
+      state.remainingMs = 0;
+      updateTimerDisplay();
+      endRound();
+      return;
+    }
+    updateTimerDisplay();
+  }
+
+  function revealTopics() {
+    if (state.phase !== "hidden") return;
+    state.phase = "ready";
+    renderPhase();
+    renderTopicsBoard();
+    renderScoreGrid();
+  }
+
+  function startRound() {
+    if (state.phase !== "ready") return;
+    timerStatus.textContent = "";
+    state.phase = "running";
+    state.startedAt = Date.now();
+    state.remainingMs = DURATION_MS;
+    renderPhase();
+    renderScoreGrid();
+    state.timerHandle = setInterval(tick, 100);
+  }
+
+  function endRound() {
+    state.phase = "ended";
+    clearInterval(state.timerHandle);
+    state.timerHandle = null;
+    timerStatus.textContent = "";
+    renderPhase();
+    renderScoreGrid();
+  }
+
+  function resetAll() {
+    clearInterval(state.timerHandle);
+    state.phase = "hidden";
+    state.startedAt = null;
+    state.remainingMs = DURATION_MS;
+    state.checkTime = state.teams.map(function () { return new Array(TOPIC_COUNT).fill(null); });
+    timerStatus.textContent = "";
+    unlockAfterEnd.checked = false;
+    renderPhase();
+    updateTimerDisplay();
+    renderTopicsBoard();
+    renderScoreGrid();
+    renderRanking();
+  }
+
+  startBtn.addEventListener("click", startRound);
+  resetBtn.addEventListener("click", resetAll);
+  unlockAfterEnd.addEventListener("change", function () {
+    renderScoreGrid();
+  });
+
+  // initial render
+  renderPhase();
+  updateTimerDisplay();
+  renderTopicsBoard();
+  renderScoreGrid();
+  renderRanking();
+})();
+</script>
+</body>
+</html>
