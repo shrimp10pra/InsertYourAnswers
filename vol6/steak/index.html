@@ -42,7 +42,7 @@
   }
 
   .wrap {
-    max-width: 1180px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 28px 20px 60px;
   }
@@ -58,7 +58,7 @@
   }
 
   header.page-head h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     margin: 0;
@@ -88,16 +88,10 @@
     text-align: center;
   }
 
-  .reveal-panel p {
-    margin: 0;
-    color: var(--text-dim);
-    font-size: 0.9rem;
-  }
-
   .topics-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
     animation: reveal 0.5s ease;
   }
 
@@ -108,41 +102,41 @@
 
   .topic-card {
     background: var(--bg-alt);
-    border-left: 3px solid var(--gold);
+    border-left: 4px solid var(--gold);
     border-radius: var(--radius-s);
-    padding: 14px 16px;
+    padding: 18px 20px;
     display: flex;
-    gap: 12px;
+    gap: 14px;
     align-items: flex-start;
   }
 
   .topic-num {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--gold);
-    line-height: 1.4;
-    min-width: 1.4em;
+    line-height: 1.5;
+    min-width: 1.2em;
   }
 
   .topic-text {
     flex: 1;
-    font-size: 1.05rem;
+    font-size: 1.28rem;
     font-weight: 600;
-    line-height: 1.5;
+    line-height: 1.65;
   }
 
   /* ---------- Main layout: timer + scoreboard/ranking ---------- */
 
   .main-grid {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 260px 1fr;
     gap: 24px;
     align-items: start;
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     .main-grid { grid-template-columns: 1fr; }
-    .topics-grid { grid-template-columns: repeat(2, 1fr); }
+    .topics-grid { grid-template-columns: 1fr; }
   }
 
   /* ---------- Timer ---------- */
@@ -151,14 +145,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
     position: sticky;
     top: 20px;
   }
 
   .spotlight {
-    width: 220px;
-    height: 220px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -178,7 +172,7 @@
   }
 
   .timer-digits {
-    font-size: 3.1rem;
+    font-size: 2.5rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
@@ -234,11 +228,12 @@
   }
 
   .unlock-row {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--text-dim);
     display: flex;
     align-items: center;
     gap: 6px;
+    text-align: center;
   }
 
   /* ---------- Scoreboard ---------- */
@@ -246,35 +241,38 @@
   .scoreboard {
     background: var(--bg-alt);
     border-radius: var(--radius-m);
-    padding: 18px;
+    padding: 20px;
     border: 1px solid var(--line);
   }
 
   .scoreboard h2, .ranking-panel h2 {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-dim);
-    margin: 0 0 14px;
+    margin: 0 0 16px;
   }
 
   .score-grid {
     display: grid;
-    grid-template-columns: minmax(110px, 160px) repeat(6, 1fr);
-    gap: 8px;
-    align-items: center;
+    grid-template-columns: minmax(130px, 190px) repeat(6, minmax(56px, 1fr));
+    gap: 10px;
+    align-items: stretch;
   }
 
   .score-head-cell {
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: var(--text-dim);
     font-weight: 700;
+    padding-bottom: 2px;
   }
 
   .team-name-cell {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    border-left: 4px solid var(--row-color, var(--gold));
+    padding: 6px 0 6px 10px;
   }
 
   .team-dot {
@@ -282,6 +280,7 @@
     height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
+    background: var(--row-color, var(--gold));
   }
 
   .team-name-cell input[type="text"] {
@@ -289,7 +288,7 @@
     border: none;
     border-bottom: 1px solid transparent;
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 1.15rem;
     font-weight: 700;
     font-family: inherit;
     padding: 2px 0;
@@ -302,7 +301,7 @@
   }
 
   .check-cell {
-    aspect-ratio: 1 / 1;
+    min-height: 74px;
     border-radius: var(--radius-s);
     border: 1px solid var(--line);
     background: rgba(245,239,230,0.03);
@@ -341,26 +340,26 @@
   }
 
   .check-mark {
-    font-size: 1.3rem;
+    font-size: 1.9rem;
     line-height: 1;
     color: #241019;
     font-weight: 700;
   }
 
   .check-time {
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     color: rgba(36,16,25,0.75);
     font-variant-numeric: tabular-nums;
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   /* ---------- Ranking ---------- */
 
   .ranking-panel {
-    margin-top: 20px;
+    margin-top: 22px;
     background: var(--bg-alt);
     border-radius: var(--radius-m);
-    padding: 18px;
+    padding: 20px;
     border: 1px solid var(--line);
   }
 
@@ -369,14 +368,14 @@
     grid-template-columns: 2.4em 1fr auto auto;
     gap: 12px;
     align-items: center;
-    padding: 9px 4px;
+    padding: 10px 4px;
     border-bottom: 1px solid var(--line);
   }
 
   .rank-row:last-child { border-bottom: none; }
 
   .rank-num {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--text-dim);
   }
@@ -388,6 +387,7 @@
     align-items: center;
     gap: 8px;
     font-weight: 700;
+    font-size: 1.05rem;
   }
 
   .rank-count {
@@ -397,7 +397,7 @@
   }
 
   .rank-time {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     color: var(--text-dim);
     font-variant-numeric: tabular-nums;
     min-width: 4.5em;
@@ -429,7 +429,7 @@
 <div class="wrap">
 
   <header class="page-head">
-    <h1></h1>
+    <h1 id="pageTitle"></h1>
     <span class="phase-tag" id="phaseTag"></span>
   </header>
 
@@ -509,6 +509,7 @@
     timerHandle: null
   };
 
+  var pageTitle = document.getElementById("pageTitle");
   var topicsBoard = document.getElementById("topicsBoard");
   var scoreGrid = document.getElementById("scoreGrid");
   var rankingList = document.getElementById("rankingList");
@@ -519,6 +520,9 @@
   var startBtn = document.getElementById("startBtn");
   var resetBtn = document.getElementById("resetBtn");
   var unlockAfterEnd = document.getElementById("unlockAfterEnd");
+
+  // ページタイトル(<title>)を見出しにもそのまま表示する
+  pageTitle.textContent = document.title || "大喜利スコアボード";
 
   function formatTime(ms) {
     var totalSec = Math.max(0, ms) / 1000;
@@ -552,15 +556,11 @@
       var panel = document.createElement("div");
       panel.className = "reveal-panel";
 
-      var p = document.createElement("p");
-      p.textContent = "";
-
       var btn = document.createElement("button");
       btn.className = "primary";
       btn.textContent = "お題を表示";
       btn.addEventListener("click", revealTopics);
 
-      panel.appendChild(p);
       panel.appendChild(btn);
       topicsBoard.appendChild(panel);
       return;
@@ -602,10 +602,10 @@
     state.teams.forEach(function (team, tIdx) {
       var nameCell = document.createElement("div");
       nameCell.className = "team-name-cell";
+      nameCell.style.setProperty("--row-color", TEAM_COLORS[tIdx]);
 
       var dot = document.createElement("span");
       dot.className = "team-dot";
-      dot.style.background = TEAM_COLORS[tIdx];
 
       var nameInput = document.createElement("input");
       nameInput.type = "text";
@@ -734,25 +734,25 @@
 
   function renderPhase() {
     if (state.phase === "hidden") {
-      phaseTag.textContent = "";
+      phaseTag.textContent = "お題を表示するとスタートできます";
       startBtn.disabled = true;
       startBtn.textContent = "スタート";
       spotlight.classList.remove("danger", "ended");
       spotlight.classList.add("waiting");
     } else if (state.phase === "ready") {
-      phaseTag.textContent = "";
+      phaseTag.textContent = "準備ができたらスタート";
       startBtn.disabled = false;
       startBtn.textContent = "スタート";
       spotlight.classList.remove("danger", "ended", "waiting");
     } else if (state.phase === "running") {
-      phaseTag.textContent = "";
+      phaseTag.textContent = "進行中";
       startBtn.disabled = true;
-      startBtn.textContent = "";
+      startBtn.textContent = "進行中";
       spotlight.classList.remove("ended", "waiting");
     } else if (state.phase === "ended") {
-      phaseTag.textContent = "";
+      phaseTag.textContent = "タイムアップ";
       startBtn.disabled = true;
-      startBtn.textContent = "";
+      startBtn.textContent = "終了";
       spotlight.classList.remove("danger", "waiting");
       spotlight.classList.add("ended");
     }
@@ -803,7 +803,7 @@
     state.phase = "ended";
     clearInterval(state.timerHandle);
     state.timerHandle = null;
-    timerStatus.textContent = "";
+    timerStatus.textContent = "お疲れさまでした";
     renderPhase();
     renderScoreGrid();
   }
