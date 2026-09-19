@@ -20,7 +20,10 @@
       <h1>得点表</h1>
       <p class="subtitle">4チーム対抗戦・全5企画</p>
     </div>
-    <button id="resetBtn" class="btn btn-ghost" type="button">記録をリセット</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="display.html" target="_blank" rel="noopener" class="btn btn-ghost">スクリーン表示を開く</a>
+      <button id="resetBtn" class="btn btn-ghost" type="button">記録をリセット</button>
+    </div>
   </div>
 </header>
 
@@ -56,9 +59,10 @@
 </main>
 
 <footer class="site-footer">
-  <p>順位ポイントが同点になった場合は、該当順位の点数を平均して割り当てます（例：1位が2チーム同点の場合、25pt と 20pt の平均 22.5pt を両チームに付与）。入力内容はこの端末のブラウザ内にのみ保存され、他の端末とは共有されません。</p>
+  <p>順位ポイントが同点になった場合は、その順位帯の中で最も良い順位のポイントを全員に付与します（例：1位が2チーム同点の場合、両チームとも25ptを獲得し、次のチームは3位として15ptを獲得します）。各企画には「結果をサイトに反映する」チェックボックスがあり、チェックを入れるまではその企画のポイント表示が「？」で隠され、総合順位・得点比較・得点表（内訳）の合計にも反映されません（得点の入力自体はチェックの有無に関わらずいつでも行えます）。この管理画面で操作した内容は、同じブラウザで開いた「スクリーン表示」ページに自動的に反映されます。入力内容はこの端末のブラウザ内にのみ保存され、他の端末とは共有されません。</p>
 </footer>
 
+<script src="common.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

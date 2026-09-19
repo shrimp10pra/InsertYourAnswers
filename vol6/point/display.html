@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>得点表 | スクリーン表示</title>
+<meta name="description" content="4チーム対抗戦の得点をリアルタイムで表示するスクリーン用ページ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="glow" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="header-row">
+    <div>
+      <h1>得点表</h1>
+      <p class="subtitle">4チーム対抗戦・全5企画</p>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="standings" aria-labelledby="standings-heading">
+    <h2 id="standings-heading">総合順位</h2>
+    <div class="standings-grid" id="standingsGrid"></div>
+  </section>
+
+  <section class="bars" aria-labelledby="bars-heading">
+    <h2 id="bars-heading">得点比較</h2>
+    <div class="bars-list" id="barsList"></div>
+  </section>
+
+  <section class="breakdown" aria-labelledby="breakdown-heading">
+    <h2 id="breakdown-heading">得点表（内訳）</h2>
+    <div class="table-scroll">
+      <table id="breakdownTable"></table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>このページはスクリーン投影用の表示専用ページです。管理画面（index.html）で得点を入力・公開すると、このページも自動的に更新されます。</p>
+</footer>
+
+<script src="common.js"></script>
+<script src="display.js"></script>
+</body>
+</html>

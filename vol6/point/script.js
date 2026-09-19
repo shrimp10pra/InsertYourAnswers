@@ -1,139 +1,13 @@
 /* =====================================================
-   得点表 — 4チーム対抗戦
+   得点表 — 管理画面用スクリプト
    ---------------------------------------------------
-   企画1: 獲得点がそのまま持ち点 (2回)
-   企画2: 順位ポイント 25/20/15/10 (2回)
-   企画3: 順位ポイント 25/20/15/10 (1回)
-   企画4: 順位ポイント 25/20/15/10 (2回)
-   企画5: 獲得点がそのまま持ち点 (1回)
+   このファイルは common.js を先に読み込んだ状態で使用します。
+   得点入力・チーム名編集・企画ごとの公開トグルなど、
+   「更新する側」の画面だけが持つ機能をまとめています。
+
+   ここで localStorage に保存した内容は、同じブラウザで開いた
+   display.html（スクリーン表示用）側に自動的に反映されます。
 ===================================================== */
-
-const STORAGE_KEY = "scoreboard-4teams-v1";
-const RANK_POINTS = [25, 20, 15, 10];
-
-const TEAM_COLORS = ["var(--t1)", "var(--t2)", "var(--t3)", "var(--t4)"];
-
-const DEFAULT_TEAMS = [
-  { id: "t1", name: "チーム1" },
-  { id: "t2", name: "チーム2" },
-  { id: "t3", name: "チーム3" },
-  { id: "t4", name: "チーム4" },
-];
-
-const EVENTS = [
-  { id: "e1", label: "企画1", type: "raw",  rounds: 2, rule: "獲得点がそのまま持ち点になります" },
-  { id: "e2", label: "企画2", type: "rank", rounds: 2, rule: "順位に応じて 1位25pt・2位20pt・3位15pt・4位10pt を獲得します" },
-  { id: "e3", label: "企画3", type: "rank", rounds: 1, rule: "順位に応じて 1位25pt・2位20pt・3位15pt・4位10pt を獲得します" },
-  { id: "e4", label: "企画4", type: "rank", rounds: 2, rule: "順位に応じて 1位25pt・2位20pt・3位15pt・4位10pt を獲得します" },
-  { id: "e5", label: "企画5", type: "raw",  rounds: 1, rule: "獲得点がそのまま持ち点になります" },
-];
-
-let state = {
-  teams: DEFAULT_TEAMS.map((t) => ({ ...t })),
-  // scores[eventId][roundIndex][teamId] = number | null
-  scores: {},
-};
-
-/* ---------------- persistence ---------------- */
-
-function initScores() {
-  EVENTS.forEach((ev) => {
-    if (!state.scores[ev.id]) state.scores[ev.id] = [];
-    for (let r = 0; r < ev.rounds; r++) {
-      if (!state.scores[ev.id][r]) state.scores[ev.id][r] = {};
-      state.teams.forEach((team) => {
-        if (state.scores[ev.id][r][team.id] === undefined) {
-          state.scores[ev.id][r][team.id] = null;
-        }
-      });
-    }
-  });
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const saved = JSON.parse(raw);
-    if (saved.teams) state.teams = saved.teams;
-    if (saved.scores) state.scores = saved.scores;
-  } catch (e) {
-    console.warn("保存データの読み込みに失敗しました", e);
-  }
-}
-
-function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.warn("保存に失敗しました", e);
-  }
-}
-
-/* ---------------- scoring logic ---------------- */
-
-// Returns { teamId: pointsEarnedThisRound }
-function calcRoundPoints(event, roundIndex) {
-  const roundScores = state.scores[event.id][roundIndex];
-  const result = {};
-
-  if (event.type === "raw") {
-    state.teams.forEach((team) => {
-      result[team.id] = Number(roundScores[team.id]) || 0;
-    });
-    return result;
-  }
-
-  // type === "rank": sort by raw score desc, tie => all tied teams get the
-  // best (highest) rank's point value; the next team after the tied group
-  // continues from its own sorted position (e.g. 2 teams tied for 1st both
-  // get 25pt, and the next team is treated as 3rd and gets 15pt).
-  const anyEntered = state.teams.some(
-    (team) => roundScores[team.id] !== null && roundScores[team.id] !== undefined
-  );
-  if (!anyEntered) {
-    state.teams.forEach((team) => {
-      result[team.id] = 0;
-    });
-    return result;
-  }
-
-  const entries = state.teams.map((team) => ({
-    teamId: team.id,
-    score: Number(roundScores[team.id]) || 0,
-  }));
-  entries.sort((a, b) => b.score - a.score);
-
-  let i = 0;
-  while (i < entries.length) {
-    let j = i;
-    while (j + 1 < entries.length && entries[j + 1].score === entries[i].score) {
-      j++;
-    }
-    // 同点の場合は、その順位帯の中で最も良い順位のポイントを全員に付与する
-    const topPoint = RANK_POINTS[i];
-    for (let k = i; k <= j; k++) {
-      result[entries[k].teamId] = topPoint;
-    }
-    i = j + 1;
-  }
-  return result;
-}
-
-function calcTeamTotal(teamId) {
-  let total = 0;
-  EVENTS.forEach((ev) => {
-    for (let r = 0; r < ev.rounds; r++) {
-      total += calcRoundPoints(ev, r)[teamId] || 0;
-    }
-  });
-  return total;
-}
-
-function formatPt(n) {
-  if (Number.isInteger(n)) return String(n);
-  return n.toFixed(1);
-}
 
 /* ---------------- rendering: static structure ---------------- */
 
@@ -171,13 +45,27 @@ function buildNamesGrid() {
   });
 }
 
+function updateRevealUI(eventId) {
+  const badge = document.querySelector(`[data-reveal-status="${eventId}"]`);
+  if (badge) {
+    const revealed = isRevealed(eventId);
+    badge.textContent = revealed ? "公開中" : "未公開";
+    badge.style.background = revealed ? "#16a34a" : "#e5e7eb";
+    badge.style.color = revealed ? "#fff" : "#4b5563";
+  }
+  const card = badge ? badge.closest(".event-card") : null;
+  if (card) {
+    card.classList.toggle("is-revealed", isRevealed(eventId));
+  }
+}
+
 function buildEventsSection() {
   const container = document.getElementById("eventsContainer");
   container.innerHTML = "";
 
   EVENTS.forEach((ev) => {
     const card = document.createElement("div");
-    card.className = "event-card";
+    card.className = "event-card" + (isRevealed(ev.id) ? " is-revealed" : "");
 
     const head = document.createElement("div");
     head.className = "event-head";
@@ -190,6 +78,47 @@ function buildEventsSection() {
     rule.className = "event-rule";
     rule.textContent = ev.rule;
     card.appendChild(rule);
+
+    // ---- 公開タイミング切り替え ----
+    const revealRow = document.createElement("div");
+    revealRow.className = "event-reveal-row";
+    revealRow.style.cssText =
+      "display:flex;align-items:center;gap:10px;margin:8px 0 4px;";
+
+    const toggleLabel = document.createElement("label");
+    toggleLabel.className = "reveal-toggle";
+    toggleLabel.style.cssText =
+      "display:flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer;user-select:none;";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = isRevealed(ev.id);
+    checkbox.setAttribute("aria-label", `${ev.label}の結果をサイトに反映する`);
+    checkbox.addEventListener("change", () => {
+      state.revealed[ev.id] = checkbox.checked;
+      saveState();
+      updateRevealUI(ev.id);
+      refreshComputedValues();
+    });
+    toggleLabel.appendChild(checkbox);
+
+    const toggleText = document.createElement("span");
+    toggleText.textContent = "結果をサイトに反映する";
+    toggleLabel.appendChild(toggleText);
+    revealRow.appendChild(toggleLabel);
+
+    const statusBadge = document.createElement("span");
+    statusBadge.className = "reveal-status";
+    statusBadge.setAttribute("data-reveal-status", ev.id);
+    statusBadge.textContent = isRevealed(ev.id) ? "公開中" : "未公開";
+    statusBadge.style.cssText =
+      "font-size:0.75rem;font-weight:700;padding:2px 10px;border-radius:999px;" +
+      (isRevealed(ev.id)
+        ? "background:#16a34a;color:#fff;"
+        : "background:#e5e7eb;color:#4b5563;");
+    revealRow.appendChild(statusBadge);
+
+    card.appendChild(revealRow);
+    // --------------------------------
 
     const rounds = document.createElement("div");
     rounds.className = "rounds";
@@ -267,169 +196,12 @@ function buildEventsSection() {
 
 /* ---------------- rendering: computed / dynamic values ---------------- */
 
-function renderStandings() {
-  const totals = state.teams.map((team, idx) => ({
-    ...team,
-    idx,
-    total: calcTeamTotal(team.id),
-  }));
-  totals.sort((a, b) => b.total - a.total);
-
-  const grid = document.getElementById("standingsGrid");
-  grid.innerHTML = "";
-
-  let rank = 0;
-  let prevTotal = null;
-  totals.forEach((team, i) => {
-    if (team.total !== prevTotal) rank = i + 1;
-    prevTotal = team.total;
-
-    const card = document.createElement("div");
-    card.className = "standing-card";
-    card.style.setProperty("--team-color", TEAM_COLORS[team.idx]);
-
-    const rankEl = document.createElement("p");
-    rankEl.className = "standing-rank" + (rank === 1 ? " is-first" : "");
-    rankEl.textContent = `${rank}位`;
-    card.appendChild(rankEl);
-
-    const nameEl = document.createElement("p");
-    nameEl.className = "standing-name";
-    nameEl.textContent = team.name;
-    nameEl.setAttribute("data-team-name", team.id);
-    card.appendChild(nameEl);
-
-    const totalEl = document.createElement("p");
-    totalEl.className = "standing-total";
-    totalEl.innerHTML = `${formatPt(team.total)}<span class="unit">pt</span>`;
-    card.appendChild(totalEl);
-
-    grid.appendChild(card);
-  });
-}
-
-function renderBars() {
-  const totals = state.teams.map((team, idx) => ({
-    ...team,
-    idx,
-    total: calcTeamTotal(team.id),
-  }));
-  const max = Math.max(1, ...totals.map((t) => t.total));
-
-  const list = document.getElementById("barsList");
-  list.innerHTML = "";
-
-  totals.forEach((team) => {
-    const row = document.createElement("div");
-    row.className = "bar-row";
-
-    const nameEl = document.createElement("span");
-    nameEl.className = "bar-team";
-    nameEl.textContent = team.name;
-    nameEl.setAttribute("data-team-name", team.id);
-    row.appendChild(nameEl);
-
-    const track = document.createElement("div");
-    track.className = "bar-track";
-    const fill = document.createElement("div");
-    fill.className = "bar-fill";
-    fill.style.setProperty("--team-color", TEAM_COLORS[team.idx]);
-    fill.style.width = `${(team.total / max) * 100}%`;
-    track.appendChild(fill);
-    row.appendChild(track);
-
-    const valueEl = document.createElement("span");
-    valueEl.className = "bar-value";
-    valueEl.textContent = `${formatPt(team.total)}pt`;
-    row.appendChild(valueEl);
-
-    list.appendChild(row);
-  });
-}
-
-function renderBreakdown() {
-  const table = document.getElementById("breakdownTable");
-  table.innerHTML = "";
-
-  // build column list: one column per round, labelled e.g. 企画1-1
-  const columns = [];
-  EVENTS.forEach((ev) => {
-    for (let r = 0; r < ev.rounds; r++) {
-      columns.push({
-        eventId: ev.id,
-        round: r,
-        label: ev.rounds > 1 ? `${ev.label}-${r + 1}` : ev.label,
-      });
-    }
-  });
-
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  headRow.innerHTML =
-    `<th>チーム</th>` +
-    columns.map((c) => `<th>${c.label}</th>`).join("") +
-    `<th>合計</th>`;
-  thead.appendChild(headRow);
-  table.appendChild(thead);
-
-  const tbody = document.createElement("tbody");
-  state.teams.forEach((team, idx) => {
-    const tr = document.createElement("tr");
-
-    const tdName = document.createElement("td");
-    tdName.className = "team-cell";
-    tdName.style.setProperty("--team-color", TEAM_COLORS[idx]);
-    const dot = document.createElement("span");
-    dot.className = "dot";
-    tdName.appendChild(dot);
-    const nameSpan = document.createElement("span");
-    nameSpan.textContent = team.name;
-    nameSpan.setAttribute("data-team-name", team.id);
-    tdName.appendChild(nameSpan);
-    tr.appendChild(tdName);
-
-    let total = 0;
-    columns.forEach((c) => {
-      const ev = EVENTS.find((e) => e.id === c.eventId);
-      const pts = calcRoundPoints(ev, c.round)[team.id] || 0;
-      total += pts;
-      const td = document.createElement("td");
-      td.textContent = formatPt(pts);
-      tr.appendChild(td);
-    });
-
-    const tdTotal = document.createElement("td");
-    tdTotal.textContent = formatPt(total);
-    tr.appendChild(tdTotal);
-
-    tbody.appendChild(tr);
-  });
-
-  const totalRow = document.createElement("tr");
-  totalRow.className = "total-row";
-  totalRow.innerHTML =
-    `<td>合計</td>` +
-    columns
-      .map((c) => {
-        const ev = EVENTS.find((e) => e.id === c.eventId);
-        const sum = state.teams.reduce(
-          (s, team) => s + (calcRoundPoints(ev, c.round)[team.id] || 0),
-          0
-        );
-        return `<td>${formatPt(sum)}</td>`;
-      })
-      .join("") +
-    `<td>${formatPt(
-      state.teams.reduce((s, team) => s + calcTeamTotal(team.id), 0)
-    )}</td>`;
-  tbody.appendChild(totalRow);
-
-  table.appendChild(tbody);
-}
-
 function refreshComputedValues() {
   // update per-round point badges without rebuilding the input DOM
+  // 未公開の企画は「？」で隠し、公開後にはじめて実際の点数を表示する
+  // （得点の入力欄自体は常に操作できる＝裏側で先に打ち込んでおける）
   EVENTS.forEach((ev) => {
+    const revealed = isRevealed(ev.id);
     for (let r = 0; r < ev.rounds; r++) {
       const pts = calcRoundPoints(ev, r);
       const topScore = Math.max(...Object.values(pts));
@@ -438,8 +210,17 @@ function refreshComputedValues() {
           `[data-badge="${ev.id}-${r}-${team.id}"]`
         );
         if (!badge) return;
+        if (!revealed) {
+          badge.textContent = "？";
+          badge.classList.remove("is-lead");
+          badge.classList.add("is-pending");
+          badge.style.opacity = "0.45";
+          return;
+        }
         const val = pts[team.id] || 0;
         badge.textContent = formatPt(val);
+        badge.classList.remove("is-pending");
+        badge.style.opacity = "";
         badge.classList.toggle(
           "is-lead",
           val === topScore && topScore > 0
@@ -460,8 +241,13 @@ function resetAll() {
     "すべての得点とチーム名をリセットします。よろしいですか？"
   );
   if (!ok) return;
-  state = { teams: DEFAULT_TEAMS.map((t) => ({ ...t })), scores: {} };
+  state = {
+    teams: DEFAULT_TEAMS.map((t) => ({ ...t })),
+    scores: {},
+    revealed: {},
+  };
   initScores();
+  initRevealed();
   saveState();
   buildNamesGrid();
   buildEventsSection();
@@ -473,6 +259,7 @@ function resetAll() {
 function init() {
   loadState();
   initScores();
+  initRevealed();
   buildNamesGrid();
   buildEventsSection();
   refreshComputedValues();
